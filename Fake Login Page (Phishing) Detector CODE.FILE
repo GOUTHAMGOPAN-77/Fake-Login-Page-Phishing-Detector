@@ -1,0 +1,54 @@
+import re
+from urllib.parse import urlparse
+
+def check_url(url):
+    score = 0
+    reasons = []
+
+    # Rule 1: HTTPS check
+    if not url.startswith("https://"):
+        score += 1
+        reasons.append("No HTTPS (insecure)")
+
+    # Rule 2: IP address in URL
+    if re.search(r'(\d{1,3}\.){3}\d{1,3}', url):
+        score += 1
+        reasons.append("IP address used instead of domain")
+
+    # Rule 3: URL length
+    if len(url) > 75:
+        score += 1
+        reasons.append("URL too long")
+
+    # Rule 4: Use of '@'
+    if "@" in url:
+        score += 1
+        reasons.append("Contains '@' (phishing trick)")
+
+    # Rule 5: Use of '-' in domain
+    domain = urlparse(url).netloc
+    if "-" in domain:
+        score += 1
+        reasons.append("Suspicious '-' in domain name")
+
+    # Rule 6: Known safe domain list
+    safe_domains = ["google.com", "facebook.com", "amazon.com", "github.com" , "flipkart.com"]
+    if not any(safe in domain for safe in safe_domains):
+        score += 1
+        reasons.append("Domain not in trusted list")
+
+    # Result
+    if score <= 1:
+        status = "SAFE ✅"
+    elif score <= 3:
+        status = "SUSPICIOUS ⚠️"
+    else:
+        status = "DANGEROUS ❌"
+
+    print("\nResult:", status)
+    print("Reasons:")
+    for reason in reasons:
+        print("-", reason)
+
+url = input("Enter a URL to check: ")
+check_url(url)
